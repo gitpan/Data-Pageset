@@ -1,5 +1,11 @@
 Revision history for Perl extension Data::Pageset.
 
+0.06  Sun Aug 17 08:27:00 2003
+	- Fixed tests that broke from Data::Page bug fix
+	- Made require Data::Page 0.18
+
+0.05  - skipped
+
 0.04  Wed Mar 12 13:13:13 2003
 	- Removed 'our' values so will work with 5.00503
 	- Thanks to Robert Price
