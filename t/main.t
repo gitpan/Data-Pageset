@@ -4,11 +4,86 @@ use strict;
 
 use lib qw( ./blib/lib ../blib/lib );
 
-use Test::More tests => 380;
+use Test::More tests => 389;
 
-##################################
-## Test Configs
-##################################
+# Check we can load module
+BEGIN { use_ok( 'Data::Pageset' ); }
+
+#######
+# new()
+#######
+eval {
+	Data::Pageset->new();
+};
+like($@,qr/total_entries and entries_per_page must be supplied/,'new - Croak when no params');
+
+eval {
+	Data::Pageset->new({
+		'total_entries' => 12,
+	});
+};
+like($@,qr/total_entries and entries_per_page must be supplied/,'new - Croak when no entries_per_page');
+
+eval {
+	Data::Pageset->new({
+		'entries_per_page' => 3,
+	});
+};
+like($@,qr/total_entries and entries_per_page must be supplied/,'new - Croak when no entries_per_page');
+
+eval {
+	Data::Pageset->new({
+		'total_entries' => 12,
+		'entries_per_page' => -2,
+	});
+};
+like($@,qr/Fewer than one entry per page/,'new - Croak when num entries_per_page is negative');
+
+
+my $dp = Data::Pageset->new({
+	'total_entries' => '23',
+	'entries_per_page' => '2',
+});
+is($dp->current_page(),'1','new - Default current page of 1 set');
+
+$dp = Data::Pageset->new({
+	'total_entries' => '23',
+	'entries_per_page' => '2',
+	'current_page' => -90,
+});
+is($dp->current_page(),'1','new - Default current page of 1 set when current_page less than first_page');
+
+$dp = Data::Pageset->new({
+	'total_entries' => '20',
+	'entries_per_page' => '10',
+	'current_page' => 9,
+});
+is($dp->current_page(),'2','new - Default current page set to last page when current_page greater than last_page');
+
+######
+# pages_per_set
+######
+
+is($dp->pages_per_set(),undef,'pages_per_set - get undef when not defined');
+
+$dp = Data::Pageset->new({
+	'total_entries' => '20',
+	'entries_per_page' => '10',
+	'current_page' => 4,
+	'pages_per_set' => 2,
+});
+
+$dp = Data::Pageset->new({
+	'total_entries' => '20',
+	'entries_per_page' => '10',
+	'current_page' => 4,
+	'pages_per_set' => -2,
+});
+
+
+############
+# General tests
+############
 
 # Some configs for testing
 my %config = (
@@ -16,13 +91,6 @@ my %config = (
 	'entries_per_page'	=> 10,
 	'current_page'		=> 17
 );
-
-##################################
-## End test configs
-##################################
-
-# Check we can load module
-BEGIN { use_ok( 'Data::Pageset' ); }
 
 my $page_info = Data::Pageset->new({
 	'total_entries'       => $config{'total_entries'}, 
@@ -33,6 +101,8 @@ my $page_info = Data::Pageset->new({
 isa_ok($page_info,'Data::Pageset');
 
 $page_info->pages_per_set(2);
+
+is($page_info->pages_per_set(),2,'pages_per_set - got 2 as exected');
 
 is('19',$page_info->next_set(),'Know that the next set is 2');
 
@@ -57,7 +127,7 @@ foreach my $line (<DATA>) {
   my @vals = map { $_ = undef if $_ eq 'undef'; $_ } split /\s+/, $line;
 
   my $page = Data::Pageset->new({
-  	'total_entries'	=> $vals[0],
+  	'total_entries'		=> $vals[0],
 	'entries_per_page'	=> $vals[1],
 	'current_page'		=> $vals[2],
 	'pages_per_set'		=> $vals[3],
@@ -79,7 +149,6 @@ foreach my $line (<DATA>) {
   is($page->next_set(), $vals[12], "$name: next_set");
   is($page->previous_set(), $vals[13], "$name: previous_set");
   is($page_nums, $vals[14], "$name: pages_in_set");
-  
  
 }
   

@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(Data::Page);
 
-$VERSION = '0.04';
+$VERSION = '1.00';
 
 =head1 NAME
 
@@ -90,8 +90,7 @@ functionality.
 =cut
 
 sub new {
-	my ($proto,$conf) = @_;
-	my $class = ref($proto) || $proto;
+	my ($class,$conf) = @_;
 	my $self = {};
 	
 	croak "total_entries and entries_per_page must be supplied"
@@ -99,16 +98,11 @@ sub new {
 
 	$conf->{'current_page'} = 1 unless defined $conf->{'current_page'};
 
-	$self->{TOTAL_ENTRIES}		= $conf->{'total_entries'};
-	$self->{ENTRIES_PER_PAGE}	= $conf->{'entries_per_page'};
-	$self->{CURRENT_PAGE}		= $conf->{'current_page'};
-	
 	bless($self, $class);
-	
-	croak("Fewer than one entry per page!") if $self->entries_per_page < 1;
-	$self->{CURRENT_PAGE} = $self->first_page unless defined $self->current_page;
-	$self->{CURRENT_PAGE} = $self->first_page if $self->current_page < $self->first_page;
-	$self->{CURRENT_PAGE} = $self->last_page if $self->current_page > $self->last_page;
+
+	$self->total_entries($conf->{'total_entries'});
+	$self->entries_per_page($conf->{'entries_per_page'});
+	$self->current_page($conf->{'current_page'});
 
 	$self->pages_per_set($conf->{'pages_per_set'}) if defined $conf->{'pages_per_set'};
 
@@ -132,8 +126,10 @@ sub pages_per_set {
 	my $self = shift;
 	my $max_pages_per_set = shift;
 	
-	$self->{PAGE_SET_PAGES_PER_SET} = undef unless defined $self->{PAGE_SET_PAGES_PER_SET};
+	# set as undef so it at least exists
+	$self->{PAGE_SET_PAGES_PER_SET} = undef unless exists $self->{PAGE_SET_PAGES_PER_SET};
 	
+	# Not trying to set, so return current number;
 	return $self->{PAGE_SET_PAGES_PER_SET} unless $max_pages_per_set;
 
 	$self->{PAGE_SET_PAGES_PER_SET} = $max_pages_per_set;	
@@ -155,7 +151,8 @@ sub pages_per_set {
 
 		if ($starting_page > 1) {
 			$self->{PAGE_SET_PREVIOUS} = $starting_page - $max_pages_per_set;
-			$self->{PAGE_SET_PREVIOUS} =  1 if $self->{PAGE_SET_PREVIOUS} < 1;
+			# I can't see a reason for this to be here!
+			#$self->{PAGE_SET_PREVIOUS} =  1 if $self->{PAGE_SET_PREVIOUS} < 1;
 		}
 
 		$end_page = $self->last_page() if $self->last_page() < $end_page;
@@ -219,7 +216,7 @@ sub _calc_start_page {
 	my $current_page = $self->current_page();
 	my $max_pages_per_set;
 	
-	my $current_page_set;
+	my $current_page_set = 0;
 	
 	if ($max_page_links_per_page > 0) {
 		$current_page_set = int($current_page/$max_page_links_per_page);
@@ -233,12 +230,6 @@ sub _calc_start_page {
 	
 	return $start_page;
 }
-
-=head1 ISSUES
-
-There has been one report of problems with Perl 5.6.0 and
-Apache::Template, please let me know if you experience
-this as well.
 
 =head1 EXPORT
 
