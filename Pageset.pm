@@ -1,14 +1,15 @@
 package Data::Pageset;
 
 use strict;
-use warnings;
 use Carp;
 
 use Data::Page;
 
-our @ISA = qw(Data::Page);
+use vars qw(@ISA $VERSION);
 
-our $VERSION = '0.03';
+@ISA = qw(Data::Page);
+
+$VERSION = '0.04';
 
 =head1 NAME
 
@@ -254,12 +255,10 @@ L<Data::Page>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000-2, Leo Lapworth
+Copyright (C) 2003, Leo Lapworth
 
 This module is free software; you can redistribute it or modify it
 under the same terms as Perl itself.
-
-With thanks to Foxtons for letting me develop this in their time.
 
 =cut
 

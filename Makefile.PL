@@ -5,7 +5,7 @@ WriteMakefile(
     'NAME'		=> 'Data::Pageset',
     'VERSION_FROM'	=> 'Pageset.pm', # finds $VERSION
     'PREREQ_PM'		=> {
-		'Data::Page'	=> 0.14,
+		'Data::Page'	=> 0.15,
 		'Test::More' => 0.1,
 	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
