@@ -10,15 +10,12 @@ use Test::More tests => 380;
 ## Test Configs
 ##################################
 
-# basic lock file
-# 10 secs before going stale
+# Some configs for testing
 my %config = (
 	'total_entries'		=> 300,
 	'entries_per_page'	=> 10,
 	'current_page'		=> 17
 );
-
-my $file = 'cache_test';
 
 ##################################
 ## End test configs

@@ -38,7 +38,7 @@ SYNOPSIS
       print "    First page of next page set: ",  $page_info->next_set, "\n";
   
       # Print the page numbers of the current set
-      foreach my $page ($page_info->pages_in_set()) {
+      foreach my $page (@{$page_info->pages_in_set()}) {
         if($page == $page_info->current_page()) {
           print "<b>$page</b> ";
         } else {

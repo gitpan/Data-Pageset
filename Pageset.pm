@@ -8,7 +8,7 @@ use Data::Page;
 
 our @ISA = qw(Data::Page);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -43,7 +43,7 @@ Data::Pageset - Page numbering and page sets
   print "    First page of next page set: ",  $page_info->next_set, "\n";
   
   # Print the page numbers of the current set
-  foreach my $page ($page_info->pages_in_set()) {
+  foreach my $page (@{$page_info->pages_in_set()}) {
     if($page == $page_info->current_page()) {
       print "<b>$page</b> ";
     } else {
@@ -233,13 +233,20 @@ sub _calc_start_page {
 	return $start_page;
 }
 
+=head1 ISSUES
+
+There has been one report of problems with Perl 5.6.0 and
+Apache::Template, please let me know if you experience
+this as well.
+
 =head1 EXPORT
 
 None by default.
 
 =head1 AUTHOR
 
-Leo Lapworth <lt>LLAP@cuckoo.org<gt>
+Leo Lapworth <lt>LLAP@cuckoo.org<gt> - let me know if you've used
+this module - go on... you know you want to.
 
 =head1 SEE ALSO
 

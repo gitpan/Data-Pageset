@@ -1,5 +1,8 @@
 Revision history for Perl extension Data::Pageset.
 
+0.03  Mon Oct 28 13:56:00 2002
+	- Documentation patch - thanks to Robin Szemeti
+
 0.02  Fri Aug 30 16:00:48 2002
 	- First release version.
 
