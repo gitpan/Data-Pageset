@@ -1,5 +1,9 @@
 Revision history for Perl extension Data::Pageset.
 
+1.01 Sat 1st Jan 2005
+	- Fixed bug with setting current_page after object construction new()
+	- set default pages_per_set to 10 - was not previously defaulted to anything
+
 1.00 Thurs Oct 26 2004
 	- Added tests to get Devel::Cover to 100%
 	- removed extranious lines of code as checks are in Data::Page

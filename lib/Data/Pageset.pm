@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(Data::Page);
 
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 =head1 NAME
 
@@ -82,10 +82,7 @@ This is the constructor of the object, it requires an anonymous
 hash containing the 'total_entries', how many data units you have,
 and the number of 'entries_per_page' to display. Optionally
 the 'current_page' (defaults to page 1) and pages_per_set (how
-many pages to display) can be added. If the pages_per_set are
-not passed in they can be added later, though obviously if it
-is never added you will not be able to use the page set specific
-functionality.
+many pages to display, defaults to 10) can be added. 
 
 =cut
 
@@ -97,18 +94,48 @@ sub new {
 		unless defined $conf->{'total_entries'} && defined $conf->{'entries_per_page'}; 
 
 	$conf->{'current_page'} = 1 unless defined $conf->{'current_page'};
-
+	$conf->{pages_per_set} = 10 unless defined $conf->{'pages_per_set'};
+	
 	bless($self, $class);
 
 	$self->total_entries($conf->{'total_entries'});
 	$self->entries_per_page($conf->{'entries_per_page'});
 	$self->current_page($conf->{'current_page'});
 
-	$self->pages_per_set($conf->{'pages_per_set'}) if defined $conf->{'pages_per_set'};
+	$self->pages_per_set($conf->{'pages_per_set'});
 
 	return $self;
 }
 
+=head2 current_page()
+
+  $page_info->current_page($page_num);
+
+This method sets the current_page to the argument supplied, it can also be 
+set in the constructor, but you may want to reuse the object if printing out
+multiple pages. It will then return the page number once set. 
+
+If this method is called without any arguments it returns the current page number.
+
+=cut
+
+sub current_page {
+	my $self = shift;
+  	
+	if (@_) {
+		# Set current page
+		$self->_current_page_accessor(@_);
+		
+		# Redo calculations, using current pages_per_set value
+		$self->pages_per_set($self->pages_per_set());
+	}
+	# Not sure if there is some cleaver way of calling SUPER here,
+	# think it would have to be wrapped in an eval
+	return $self->first_page if $self->_current_page_accessor < $self->first_page;
+	return $self->last_page  if $self->_current_page_accessor > $self->last_page;
+	return $self->_current_page_accessor();
+}
+  
 =head2 pages_per_set()
 
   $page_info->pages_per_set($number_of_pages_per_set);
@@ -204,8 +231,7 @@ the current set. undef is return if pages_per_set has not been set.
 
 sub pages_in_set {
 	my $self = shift;
-	return $self->{PAGE_SET_PAGES} if defined $self->{PAGE_SET_PAGES};
-	return [1];
+	return $self->{PAGE_SET_PAGES};
 }
 
 # Calc the first page in the current set

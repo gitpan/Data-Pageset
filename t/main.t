@@ -64,7 +64,7 @@ is($dp->current_page(),'2','new - Default current page set to last page when cur
 # pages_per_set
 ######
 
-is($dp->pages_per_set(),undef,'pages_per_set - get undef when not defined');
+is($dp->pages_per_set(),10,'pages_per_set - get undef when not defined');
 
 $dp = Data::Pageset->new({
 	'total_entries' => '20',
@@ -80,6 +80,16 @@ $dp = Data::Pageset->new({
 	'pages_per_set' => -2,
 });
 
+#####
+# Current_page()
+######
+
+$dp = Data::Pageset->new({
+	'total_entries' => '20',
+	'entries_per_page' => '10',
+});
+
+#is($dp->current_page(),1,'Got default current page as 1, when none set');
 
 ############
 # General tests
@@ -149,14 +159,13 @@ foreach my $line (<DATA>) {
   is($page->next_set(), $vals[12], "$name: next_set");
   is($page->previous_set(), $vals[13], "$name: previous_set");
   is($page_nums, $vals[14], "$name: pages_in_set");
- 
 }
   
 __DATA__
 # Initial test
 50 10 1 1   1 5 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 2 undef 1
 50 10 2 4   1 5 11 20 1 2 3 10,11,12,13,14,15,16,17,18,19 5 undef 1,2,3,4
-50 10 3 undef   1 5 21 30 2 3 4 20,21,22,23,24,25,26,27,28,29 undef undef 1
+50 10 3 undef   1 5 21 30 2 3 4 20,21,22,23,24,25,26,27,28,29 undef undef 1,2,3,4,5
 50 10 4 2   1 5 31 40 3 4 5 30,31,32,33,34,35,36,37,38,39 5 1 3,4
 50 10 5 1   1 5 41 50 4 5 undef 40,41,42,43,44,45,46,47,48,49 undef 4 1
 
@@ -175,7 +184,7 @@ __DATA__
 # Over 10
 11 10 1 2   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2
 11 10 2 3   1 2 11 11 1 2 undef 10 undef undef 1,2
-12 10 1 undef   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1
+12 10 1 undef   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2
 12 10 2 5   1 2 11 12 1 2 undef 10,11  undef undef 1,2
 13 10 1 6   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9  undef undef 1,2
 13 10 2 7   1 2 11 13 1 2 undef 10,11,12 undef undef 1,2
@@ -183,7 +192,7 @@ __DATA__
 # Under 20
 19 10 1 2   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2
 19 10 2 3   1 2 11 19 1 2 undef 10,11,12,13,14,15,16,17,18 undef undef 1,2
-20 10 1 undef   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1
+20 10 1 undef   1 2 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2
 20 10 2 5   1 2 11 20 1 2 undef 10,11,12,13,14,15,16,17,18,19 undef undef 1,2
 
 # Over 20
@@ -194,5 +203,5 @@ __DATA__
 22 10 2 10   1 3 11 20 1 2 3 10,11,12,13,14,15,16,17,18,19 undef undef 1,2,3
 22 10 3 10   1 3 21 22 2 3 undef 20,21 undef undef 1,2,3
 23 10 1 10   1 3 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2,3
-23 10 2 undef   1 3 11 20 1 2 3 10,11,12,13,14,15,16,17,18,19 undef undef 1
+23 10 2 undef   1 3 11 20 1 2 3 10,11,12,13,14,15,16,17,18,19 undef undef 1,2,3
 23 10 3 10   1 3 21 23 2 3 undef 20,21,22 undef undef 1,2,3
