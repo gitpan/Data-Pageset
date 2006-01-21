@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(Data::Page);
 
-$VERSION = '1.01';
+$VERSION = '1.02';
 
 =head1 NAME
 
@@ -24,6 +24,7 @@ Data::Pageset - Page numbering and page sets
     # Optional, will use defaults otherwise.
     'current_page'        => $current_page,
     'pages_per_set'       => $pages_per_set,
+    'mode'                => 'fixed', # default, or 'slide'
   });
 
   # General page information
@@ -62,6 +63,9 @@ In addition it also provides methods for dealing with set of pages,
 so that if there are too many pages you can easily break them
 into chunks for the user to browse through.
 
+You can even choose to view page numbers in your set in a 'sliding'
+fassion.
+
 The object can easily be passed to a templating system
 such as Template Toolkit or be used within a script.
 
@@ -76,6 +80,7 @@ such as Template Toolkit or be used within a script.
     # Optional, will use defaults otherwise.
     'current_page'        => $current_page,
     'pages_per_set'       => $pages_per_set,
+    'mode'                => 'slide', # default fixed
   });
 
 This is the constructor of the object, it requires an anonymous
@@ -83,6 +88,48 @@ hash containing the 'total_entries', how many data units you have,
 and the number of 'entries_per_page' to display. Optionally
 the 'current_page' (defaults to page 1) and pages_per_set (how
 many pages to display, defaults to 10) can be added. 
+
+The mode (which defaults to 'fixed') determins how the paging
+will work, for example with 10 pages_per_set and the current_page
+set to 18 you will get the following results:
+
+=head3 Fixed:
+
+=over 4
+
+=item Pages in set:
+
+11,12,13,14,15,16,17,18,19,20
+
+=item Previous page set:  
+
+1
+
+=item Next page set:
+
+21
+
+=back 4
+
+=head3 Slide:
+
+=over 4
+
+=item Pages in set:
+
+14,15,16,17,18,19,20,21,22,23
+
+=item Previous page set:  
+
+9
+
+=item Next page set:
+
+24
+
+=back 4
+
+You can not change modes once the object is created.
 
 =cut
 
@@ -95,7 +142,11 @@ sub new {
 
 	$conf->{'current_page'} = 1 unless defined $conf->{'current_page'};
 	$conf->{pages_per_set} = 10 unless defined $conf->{'pages_per_set'};
-	
+	if(defined $conf->{'mode'} && $conf->{'mode'} eq 'slide') {
+		$self->{mode} = 'slide';
+	} else {
+		$self->{mode} = 'fixed';
+	}
 	bless($self, $class);
 
 	$self->total_entries($conf->{'total_entries'});
@@ -169,21 +220,55 @@ sub pages_per_set {
 		$self->{PAGE_SET_PAGES} = [1] ;
 		$self->{PAGE_SET_NEXT} = $self->current_page() + 1 if $self->current_page() < $self->last_page();
 	} else {
-  
-		my $end_page = $starting_page + $max_pages_per_set - 1;
+  		if($self->{mode} eq 'fixed') {
+			my $end_page = $starting_page + $max_pages_per_set - 1;
 
-		if ($end_page < $self->last_page()) {
-			$self->{PAGE_SET_NEXT} = $end_page + 1;
+			if ($end_page < $self->last_page()) {
+				$self->{PAGE_SET_NEXT} = $end_page + 1;
+			}
+
+			if ($starting_page > 1) {
+				$self->{PAGE_SET_PREVIOUS} = $starting_page - $max_pages_per_set;
+				# I can't see a reason for this to be here!
+				#$self->{PAGE_SET_PREVIOUS} =  1 if $self->{PAGE_SET_PREVIOUS} < 1;
+			}
+
+			$end_page = $self->last_page() if $self->last_page() < $end_page;
+			$self->{PAGE_SET_PAGES} = [$starting_page .. $end_page];
+		} else {
+			# We're in slide mode
+			
+			# See if we have enough pages to slide
+			if( $max_pages_per_set >= $self->last_page()) {
+				# No sliding, no next/prev pageset
+				$self->{PAGE_SET_PAGES} = ['1' .. $self->last_page()];
+			} else {
+				# Find the middle rounding down - we want more pages after, than before
+				my $middle = int($max_pages_per_set / 2);
+				if($max_pages_per_set % 2 != 0) {
+					# must have been an odd number, add one
+					$middle++;
+				}
+				if($self->current_page() <= $middle) {
+					# we must be at the start of the page numbers
+					# so we don't want to scroll yes
+					$self->{PAGE_SET_NEXT} = $max_pages_per_set + 1;
+					$self->{PAGE_SET_PAGES} = ['1' .. $max_pages_per_set];
+				} else {
+					# Start scrolling baby!
+					$starting_page = $self->current_page() - $middle + 1;
+					my $end_page = $starting_page + $max_pages_per_set - 1;
+					$self->{PAGE_SET_PAGES} = [$starting_page .. $end_page];
+					if($end_page < $self->last_page()) {
+						$self->{PAGE_SET_NEXT} = $end_page + 1;
+					}
+					if($starting_page > $middle) {
+						$self->{PAGE_SET_PREVIOUS} = $starting_page - $middle;
+						$self->{PAGE_SET_PREVIOUS} = 1 if $self->{PAGE_SET_PREVIOUS} < 1;
+					}
+				}
+			}
 		}
-
-		if ($starting_page > 1) {
-			$self->{PAGE_SET_PREVIOUS} = $starting_page - $max_pages_per_set;
-			# I can't see a reason for this to be here!
-			#$self->{PAGE_SET_PREVIOUS} =  1 if $self->{PAGE_SET_PREVIOUS} < 1;
-		}
-
-		$end_page = $self->last_page() if $self->last_page() < $end_page;
-		$self->{PAGE_SET_PAGES} = [$starting_page .. $end_page];
 	}
 
 }

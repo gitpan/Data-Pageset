@@ -4,7 +4,7 @@ use strict;
 
 use lib qw( ./blib/lib ../blib/lib );
 
-use Test::More tests => 389;
+use Test::More tests => 477;
 
 # Check we can load module
 BEGIN { use_ok( 'Data::Pageset' ); }
@@ -141,6 +141,7 @@ foreach my $line (<DATA>) {
 	'entries_per_page'	=> $vals[1],
 	'current_page'		=> $vals[2],
 	'pages_per_set'		=> $vals[3],
+	'mode'			=> $vals[15],
   });
 
   my @integers = (0..$vals[0]);
@@ -160,7 +161,24 @@ foreach my $line (<DATA>) {
   is($page->previous_set(), $vals[13], "$name: previous_set");
   is($page_nums, $vals[14], "$name: pages_in_set");
 }
-  
+
+# 0: total_entries
+# 1: enteries_per_page
+# 2: current_page
+# 3: pages_per_set
+# 4: first_page number
+# 5: last_page number
+# 6: first entry on page
+# 7: last last entry on page
+# 8: previous_page
+# 9: current_page
+# 10: next_page
+# 11: results on current page
+# 12: next_set
+# 13: previous_set
+# 14: page numbers for set
+# 15: mode
+ 
 __DATA__
 # Initial test
 50 10 1 1   1 5 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 2 undef 1
@@ -205,3 +223,19 @@ __DATA__
 23 10 1 10   1 3 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2,3
 23 10 2 undef   1 3 11 20 1 2 3 10,11,12,13,14,15,16,17,18,19 undef undef 1,2,3
 23 10 3 10   1 3 21 23 2 3 undef 20,21,22 undef undef 1,2,3
+
+# Slide - no sliding (to low pages)
+1 10 1 4   1 1 1 1 undef 1 undef 0 undef undef 1 slide
+89 10 1 10 1 9 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2,3,4,5,6,7,8,9 slide
+
+# Slide - no sliding (current page to low)
+89 10 1 10 1 9 1 10 undef 1 2 0,1,2,3,4,5,6,7,8,9 undef undef 1,2,3,4,5,6,7,8,9 slide
+89 10 4 10 1 9 31 40 3 4 5 30,31,32,33,34,35,36,37,38,39 undef undef 1,2,3,4,5,6,7,8,9 slide
+
+# Slide - sliding
+89 10 4 10 1 9 31 40 3 4 5 30,31,32,33,34,35,36,37,38,39 undef undef 1,2,3,4,5,6,7,8,9 slide
+999 10 20 9 1 100 191 200 19 20 21 190,191,192,193,194,195,196,197,198,199 25 11 16,17,18,19,20,21,22,23,24 slide
+999 10 11 9 1 100 101 110 10 11 12 100,101,102,103,104,105,106,107,108,109 16 2 7,8,9,10,11,12,13,14,15 slide
+999 10 20 10 1 100 191 200 19 20 21 190,191,192,193,194,195,196,197,198,199 26 11 16,17,18,19,20,21,22,23,24,25 slide
+
+
