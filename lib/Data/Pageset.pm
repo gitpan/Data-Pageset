@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(Data::Page);
 
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 =head1 NAME
 
@@ -258,10 +258,8 @@ sub pages_per_set {
 					# Start scrolling baby!
 					$starting_page = $self->current_page() - $middle + 1;
 					my $end_page = $starting_page + $max_pages_per_set - 1;
+					$end_page = $self->last_page() if $self->last_page() < $end_page;
 					$self->{PAGE_SET_PAGES} = [$starting_page .. $end_page];
-					if($end_page < $self->last_page()) {
-						$self->{PAGE_SET_NEXT} = $end_page + 1;
-					}
 					if($starting_page > $middle) {
 						$self->{PAGE_SET_PREVIOUS} = $starting_page - $middle;
 						$self->{PAGE_SET_PREVIOUS} = 1 if $self->{PAGE_SET_PREVIOUS} < 1;
